@@ -54,6 +54,19 @@
   flex: 1;
   overflow: auto;
   min-height: 0;
+  background: var(--background-primary);
+  position: relative;
+}
+
+.op-zoom-spacer {
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.op-zoom-target {
+  position: relative;
+  min-width: 100%;
+  min-height: 100%;
   padding: 20px;
   box-sizing: border-box;
 }
@@ -294,7 +307,7 @@
 /* ─── Mobile ───────────────────────────────────────────── */
 
 @media (max-width: 768px) {
-  .op-preview-container { padding: 8px; }
+  .op-zoom-target { padding: 8px; }
 
   .op-preview-container .docx-wrapper {
     max-width: 100%;

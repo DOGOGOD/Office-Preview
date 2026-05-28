@@ -8,15 +8,19 @@ const VIEW_TYPE = "office-preview-view";
 const EXTENSIONS = ["docx", "doc", "pptx", "ppt", "xlsx", "xls"];
 
 const ZOOM_STEP = 0.1;
-const MIN_ZOOM = 0.3;
+const MIN_ZOOM = 1.0;
 const MAX_ZOOM = 3.0;
 
 const MAX_FILE_MB = 50;
 
 class OfficePreviewView extends FileView {
   private previewContainer: HTMLElement | null = null;
+  private zoomSpacer: HTMLElement | null = null;
+  private zoomTarget: HTMLElement | null = null;
   private zoomLevel = 1;
   private zoomLabelEl: HTMLElement | null = null;
+  private naturalW = 0;
+  private naturalH = 0;
   private pptxPreviewer: any = null;
   private renderId = 0;
   private toastTimer: number | null = null;
@@ -35,6 +39,13 @@ class OfficePreviewView extends FileView {
     this.buildToolbar();
     this.previewContainer = this.contentEl.createDiv();
     this.previewContainer.className = "op-preview-container";
+
+    this.zoomSpacer = this.previewContainer.createDiv();
+    this.zoomSpacer.className = "op-zoom-spacer";
+
+    this.zoomTarget = this.previewContainer.createDiv();
+    this.zoomTarget.className = "op-zoom-target";
+
     this.attachZoomWheel();
 
     if (this.file) {
@@ -48,13 +59,15 @@ class OfficePreviewView extends FileView {
     this.clearToast();
     this.destroyPptxPreviewer();
     this.previewContainer = null;
+    this.zoomSpacer = null;
+    this.zoomTarget = null;
   }
 
   async onLoadFile(_file: TFile): Promise<void> { await this.loadAndRender(); }
   async onUnloadFile(_file: TFile): Promise<void> { this.destroyPptxPreviewer(); }
 
   private async loadAndRender(): Promise<void> {
-    if (!this.file || !this.previewContainer) return;
+    if (!this.file || !this.previewContainer || !this.zoomTarget || !this.zoomSpacer) return;
 
     if (this.file.stat.size > MAX_FILE_MB * 1024 * 1024) {
       new Notice(`文件较大 (${(this.file.stat.size / 1024 / 1024).toFixed(1)}MB)，渲染可能需要一些时间`);
@@ -62,7 +75,9 @@ class OfficePreviewView extends FileView {
 
     const rid = ++this.renderId;
     this.destroyPptxPreviewer();
-    this.previewContainer.empty();
+    this.zoomTarget.empty();
+    this.naturalW = 0;
+    this.naturalH = 0;
     this.setZoom(1);
     this.showLoading();
 
@@ -70,12 +85,21 @@ class OfficePreviewView extends FileView {
       const buffer = await this.app.vault.readBinary(this.file);
       if (rid !== this.renderId) return;
 
-      this.previewContainer.empty();
+      this.zoomTarget.empty();
       await this.dispatchRender(this.file.extension, buffer);
+
+      // Measure natural content size after render
+      this.captureNaturalSize();
     } catch (e: unknown) {
       if (rid !== this.renderId) return;
       this.showError(e instanceof Error ? e : new Error(String(e)));
     }
+  }
+
+  private captureNaturalSize(): void {
+    if (!this.zoomTarget) return;
+    this.naturalW = this.zoomTarget.scrollWidth;
+    this.naturalH = this.zoomTarget.scrollHeight;
   }
 
   private dispatchRender(ext: string, buffer: ArrayBuffer): Promise<void> | void {
@@ -130,10 +154,45 @@ class OfficePreviewView extends FileView {
   private adjustZoom(delta: number): void { this.setZoom(this.zoomLevel + delta); }
 
   private setZoom(level: number): void {
+    const oldZoom = this.zoomLevel;
     this.zoomLevel = Math.round(Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, level)) * 100) / 100;
-    if (this.previewContainer) {
-      (this.previewContainer.style as any).zoom = String(this.zoomLevel);
+    if (!this.zoomTarget || !this.zoomSpacer || !this.previewContainer) return;
+
+    if (this.zoomLevel === 1) {
+      this.zoomTarget.style.transform = "";
+      this.zoomTarget.style.transformOrigin = "";
+      this.zoomTarget.style.position = "";
+      this.zoomTarget.style.left = "";
+      this.zoomTarget.style.top = "";
+      this.zoomSpacer.style.width = "";
+      this.zoomSpacer.style.height = "";
+      if (this.zoomLabelEl) this.zoomLabelEl.textContent = "100%";
+      return;
     }
+
+    const pc = this.previewContainer;
+    const vw = pc.clientWidth;
+    const vh = pc.clientHeight;
+    const nw = this.naturalW || vw;
+    const nh = this.naturalH || vh;
+
+    // Center position ratio in content coords (before zoom change)
+    const cx = (pc.scrollLeft + vw / 2) / (nw * oldZoom || 1);
+    const cy = (pc.scrollTop + vh / 2) / (nh * oldZoom || 1);
+
+    // Apply spacer + overlay in one synchronous block — no RAF
+    this.zoomSpacer.style.width = `${nw * this.zoomLevel}px`;
+    this.zoomSpacer.style.height = `${nh * this.zoomLevel}px`;
+    this.zoomTarget.style.position = "absolute";
+    this.zoomTarget.style.left = "0";
+    this.zoomTarget.style.top = "0";
+    this.zoomTarget.style.transform = `scale(${this.zoomLevel})`;
+    this.zoomTarget.style.transformOrigin = "0 0";
+
+    // Math-based scroll compensation — no DOM reads after writes
+    pc.scrollLeft = cx * nw * this.zoomLevel - vw / 2;
+    pc.scrollTop = cy * nh * this.zoomLevel - vh / 2;
+
     if (this.zoomLabelEl) {
       this.zoomLabelEl.textContent = `${Math.round(this.zoomLevel * 100)}%`;
     }
@@ -142,8 +201,8 @@ class OfficePreviewView extends FileView {
   // ─── DOCX ───────────────────────────────────────────────
 
   private async renderDocx(buffer: ArrayBuffer): Promise<void> {
-    if (!this.previewContainer) return;
-    await docxPreview.renderAsync(buffer, this.previewContainer, undefined, {
+    if (!this.zoomTarget) return;
+    await docxPreview.renderAsync(buffer, this.zoomTarget, undefined, {
       inWrapper: true,
       useBase64URL: true,
       renderHeaders: true,
@@ -156,11 +215,10 @@ class OfficePreviewView extends FileView {
   // ─── PPTX ───────────────────────────────────────────────
 
   private async renderPptx(buffer: ArrayBuffer): Promise<void> {
-    if (!this.previewContainer) return;
-    const w = this.previewContainer.clientWidth || 960;
-    const h = this.previewContainer.clientHeight || 540;
-    this.pptxPreviewer = initPptxPreview(this.previewContainer, {
-      width: w, height: h, mode: "list",
+    if (!this.zoomTarget) return;
+    const pw = this.previewContainer?.clientWidth || 960;
+    this.pptxPreviewer = initPptxPreview(this.zoomTarget, {
+      width: pw, mode: "list",
     });
     await this.pptxPreviewer.preview(buffer);
   }
@@ -174,14 +232,14 @@ class OfficePreviewView extends FileView {
   // ─── XLSX ───────────────────────────────────────────────
 
   private renderXlsx(buffer: ArrayBuffer): void {
-    if (!this.previewContainer) return;
+    if (!this.zoomTarget) return;
     const wb = XLSX.read(buffer, { type: "array" });
     if (wb.SheetNames.length === 0) {
-      this.previewContainer.createDiv({ text: "工作簿中无工作表" });
+      this.zoomTarget.createDiv({ text: "工作簿中无工作表" });
       return;
     }
 
-    const wrapper = this.previewContainer.createDiv();
+    const wrapper = this.zoomTarget.createDiv();
     wrapper.className = "op-xlsx-wrapper";
 
     let current = wb.SheetNames[0];
@@ -202,6 +260,7 @@ class OfficePreviewView extends FileView {
           tab.classList.add("op-xlsx-tab-active");
           area.empty();
           this.renderSheet(wb, n, area);
+          this.captureNaturalSize();
         });
       });
     }
@@ -254,31 +313,31 @@ class OfficePreviewView extends FileView {
   // ─── Helpers ────────────────────────────────────────────
 
   private showLoading(): void {
-    if (!this.previewContainer) return;
-    this.previewContainer.createDiv({
+    if (!this.zoomTarget) return;
+    this.zoomTarget.createDiv({
       cls: "op-loading",
     }).innerHTML = `<div class="op-spinner"></div><div>加载预览中...</div>`;
   }
 
   private showError(e: Error): void {
-    if (!this.previewContainer) return;
-    this.previewContainer.empty();
-    this.previewContainer.createDiv({
+    if (!this.zoomTarget) return;
+    this.zoomTarget.empty();
+    this.zoomTarget.createDiv({
       cls: "op-error",
     }).innerHTML = `<div class="op-error-icon">!</div><div>预览失败: ${e.message || "未知错误"}</div>`;
   }
 
   private showPlaceholder(): void {
-    if (!this.previewContainer) return;
-    this.previewContainer.createDiv({
+    if (!this.zoomTarget) return;
+    this.zoomTarget.createDiv({
       text: "点击文件列表中的 Office 文件进行预览",
       cls: "op-placeholder",
     });
   }
 
   private copyAllText(): void {
-    if (!this.previewContainer) return;
-    const text = this.previewContainer.innerText?.trim();
+    if (!this.zoomTarget) return;
+    const text = this.zoomTarget.innerText?.trim();
     if (!text) return;
 
     const done = () => this.showCopyToast("已复制到剪贴板");
