@@ -26,6 +26,16 @@ class OfficePreviewView extends FileView {
   private toastTimer: number | null = null;
   private useTransformZoom = false; // true for pptx (GPU), false for docx/xlsx (zoom)
 
+  // drag-to-scroll state
+  private isMouseDown = false;
+  private isPanning = false;
+  private dragStartX = 0;
+  private dragStartY = 0;
+  private scrollStartX = 0;
+  private scrollStartY = 0;
+  private handleMouseMove: ((e: MouseEvent) => void) | null = null;
+  private handleMouseUp: ((e: MouseEvent) => void) | null = null;
+
   getViewType(): string { return VIEW_TYPE; }
   getDisplayText(): string { return this.file?.name ?? "Office Preview"; }
   getIcon(): string { return "file-text"; }
@@ -46,6 +56,7 @@ class OfficePreviewView extends FileView {
     this.zoomTarget.className = "op-zoom-target";
 
     this.attachZoomWheel();
+    this.attachDragScroll();
 
     if (this.file) {
       await this.loadAndRender();
@@ -57,6 +68,14 @@ class OfficePreviewView extends FileView {
   async onClose(): Promise<void> {
     this.clearToast();
     this.destroyPptxPreviewer();
+    if (this.handleMouseMove) {
+      document.removeEventListener("mousemove", this.handleMouseMove);
+      this.handleMouseMove = null;
+    }
+    if (this.handleMouseUp) {
+      document.removeEventListener("mouseup", this.handleMouseUp);
+      this.handleMouseUp = null;
+    }
     this.previewContainer = null;
     this.zoomSpacer = null;
     this.zoomTarget = null;
@@ -163,6 +182,54 @@ class OfficePreviewView extends FileView {
         this.adjustZoom(-Math.sign(e.deltaY) * ZOOM_STEP);
       }
     }, { passive: false });
+  }
+
+  private attachDragScroll(): void {
+    if (!this.previewContainer) return;
+    const pc = this.previewContainer;
+
+    this.handleMouseMove = (e: MouseEvent) => {
+      if (!this.isMouseDown) return;
+
+      const dx = e.clientX - this.dragStartX;
+      const dy = e.clientY - this.dragStartY;
+
+      if (!this.isPanning && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
+        this.isPanning = true;
+        pc.classList.add("op-dragging");
+        pc.style.userSelect = "none";
+      }
+
+      if (this.isPanning) {
+        pc.scrollLeft = this.scrollStartX - dx;
+        pc.scrollTop = this.scrollStartY - dy;
+      }
+    };
+
+    this.handleMouseUp = () => {
+      this.isMouseDown = false;
+      if (this.isPanning) {
+        this.isPanning = false;
+        pc.classList.remove("op-dragging");
+        pc.style.userSelect = "";
+      }
+    };
+
+    pc.addEventListener("mousedown", (e: MouseEvent) => {
+      if (e.button !== 0) return;
+      const target = e.target as HTMLElement;
+      if (target.closest("button, input, select, textarea, a")) return;
+
+      this.isMouseDown = true;
+      this.isPanning = false;
+      this.dragStartX = e.clientX;
+      this.dragStartY = e.clientY;
+      this.scrollStartX = pc.scrollLeft;
+      this.scrollStartY = pc.scrollTop;
+    });
+
+    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener("mouseup", this.handleMouseUp);
   }
 
   private adjustZoom(delta: number): void { this.setZoom(this.zoomLevel + delta); }
