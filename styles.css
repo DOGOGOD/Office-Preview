@@ -48,7 +48,7 @@
   right: 16px;
 }
 
-/* ─── Preview Container ────────────────────────────────── */
+/* ─── Preview Container (scroll + layout isolation) ────── */
 
 .op-preview-container {
   flex: 1;
@@ -56,17 +56,20 @@
   min-height: 0;
   background: var(--background-primary);
   position: relative;
+  contain: layout paint;
 }
+
+/* ─── Spacer (PPTX only — invisible scroll-area anchor) ── */
 
 .op-zoom-spacer {
   pointer-events: none;
   visibility: hidden;
 }
 
+/* ─── Zoom Target ──────────────────────────────────────── */
+
 .op-zoom-target {
-  position: relative;
-  min-width: 100%;
-  min-height: 100%;
+  width: 100%;
   padding: 20px;
   box-sizing: border-box;
 }
@@ -98,8 +101,6 @@
 
 /* ─── PPTX ─────────────────────────────────────────────── */
 
-/* pptx-preview wrapper has hardcoded #000 background;
-   override with a theme-adaptive tone */
 .op-preview-container .pptx-preview-wrapper {
   background: var(--background-secondary) !important;
 }
@@ -316,19 +317,7 @@
   }
 
   .op-xlsx-table { font-size: 11px; }
-
-  .op-xlsx-table td {
-    padding: 3px 6px;
-    max-width: 140px;
-  }
-
-  .op-xlsx-tab {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  .op-toolbar-btn {
-    padding: 4px 10px;
-    font-size: 13px;
-  }
+  .op-xlsx-table td { padding: 3px 6px; max-width: 140px; }
+  .op-xlsx-tab { padding: 6px 12px; font-size: 12px; }
+  .op-toolbar-btn { padding: 4px 10px; font-size: 13px; }
 }
