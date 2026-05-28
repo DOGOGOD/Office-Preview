@@ -10,7 +10,7 @@
 
 ## English
 
-Preview Word (.docx), PowerPoint (.pptx), and Excel (.xlsx) files directly inside Obsidian — no external applications needed. Supports zoom (100%–300%), one-click text copy, multi-sheet Excel navigation, auto file routing, and adaptive light/dark themes.
+Preview Word (.docx), PowerPoint (.pptx), and Excel (.xlsx) files directly inside Obsidian — no external applications needed. Supports zoom, one-click text copy, multi-sheet Excel navigation, auto file routing, and adaptive light/dark themes.
 
 ### Features
 
@@ -20,7 +20,7 @@ Preview Word (.docx), PowerPoint (.pptx), and Excel (.xlsx) files directly insid
 - [x] **PPTX Preview** — continuous slide scroll, shapes, images, charts
 - [x] **XLSX Preview** — multi-sheet tabs, row numbers, frozen headers, data stats (displays top 200 rows)
 - [x] **Auto Routing** — click Office files in the file tree to open preview
-- [x] **Zoom** — toolbar buttons + Ctrl+Scroll, 100%–300%
+- [x] **Zoom** — toolbar buttons + Ctrl+Scroll
 - [x] **Copy Text** — one-click copy of all preview content
 - [x] **Theme Adaptive** — follows Obsidian light/dark theme
 - [x] **Mobile Responsive** — works on iOS & Android
@@ -120,7 +120,7 @@ obsidian-office-preview/
 
 ## 中文
 
-在 Obsidian 中直接预览 Word (.docx)、PowerPoint (.pptx) 和 Excel (.xlsx) 文件，无需切换到外部应用。支持缩放（100%–300%）、一键复制文本、Excel 多 Sheet 切换、文件自动路由、明暗主题适配。
+在 Obsidian 中直接预览 Word (.docx)、PowerPoint (.pptx) 和 Excel (.xlsx) 文件，无需切换到外部应用。支持缩放、一键复制文本、Excel 多 Sheet 切换、文件自动路由、明暗主题适配。
 
 ### 功能
 
@@ -130,7 +130,7 @@ obsidian-office-preview/
 - [x] **PPTX 预览** — 幻灯片连续滚动、形状/图片/图表渲染
 - [x] **XLSX 预览** — 多 Sheet 切换、行号、冻结表头、数据统计（最大显示前 200 行）
 - [x] **文件自动路由** — 点击文件树中的 Office 文件自动打开预览
-- [x] **缩放** — 工具栏按钮 + Ctrl+滚轮，100%–300%
+- [x] **缩放** — 工具栏按钮 + Ctrl+滚轮
 - [x] **文本复制** — 一键复制预览中的全部文本
 - [x] **主题适配** — 跟随 Obsidian 明暗主题自动切换
 - [x] **移动端适配** — iOS / Android 均可使用
