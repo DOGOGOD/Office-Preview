@@ -1,0 +1,321 @@
+/* ─── Toolbar ──────────────────────────────────────────── */
+
+.op-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 16px;
+  min-height: 36px;
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.op-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.op-toolbar-btn {
+  background: transparent;
+  border: 1px solid var(--background-modifier-border);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.op-toolbar-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.op-toolbar-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 40px;
+  text-align: center;
+  user-select: none;
+}
+
+.op-toolbar-copy {
+  position: absolute;
+  right: 16px;
+}
+
+/* ─── Preview Container ────────────────────────────────── */
+
+.op-preview-container {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* ─── DOCX ─────────────────────────────────────────────── */
+
+.op-preview-container .docx-wrapper {
+  max-width: 820px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.op-preview-container .docx-wrapper table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12px 0;
+}
+
+.op-preview-container .docx-wrapper td,
+.op-preview-container .docx-wrapper th {
+  border: 1px solid var(--background-modifier-border);
+  padding: 6px 10px;
+}
+
+.op-preview-container .docx-wrapper img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ─── PPTX ─────────────────────────────────────────────── */
+
+/* pptx-preview wrapper has hardcoded #000 background;
+   override with a theme-adaptive tone */
+.op-preview-container .pptx-preview-wrapper {
+  background: var(--background-secondary) !important;
+}
+
+/* ─── XLSX ─────────────────────────────────────────────── */
+
+.op-xlsx-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.op-xlsx-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--background-modifier-border);
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.op-xlsx-tab {
+  padding: 8px 18px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.op-xlsx-tab:hover { color: var(--text-normal); }
+
+.op-xlsx-tab-active {
+  color: var(--interactive-accent);
+  border-bottom-color: var(--interactive-accent);
+  font-weight: 600;
+}
+
+.op-xlsx-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.op-xlsx-table-wrapper {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+}
+
+.op-xlsx-table {
+  border-collapse: collapse;
+  font-size: 13px;
+  width: max-content;
+  min-width: 100%;
+}
+
+.op-xlsx-table td {
+  border: 1px solid var(--background-modifier-border);
+  padding: 4px 10px;
+  white-space: nowrap;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+.op-xlsx-table tr:nth-child(even) td {
+  background: rgba(128, 128, 128, 0.04);
+}
+
+.op-xlsx-header-row td {
+  font-weight: 600;
+  background: var(--background-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.op-xlsx-row-num {
+  background: var(--background-secondary) !important;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  min-width: 44px;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+.op-xlsx-header-row .op-xlsx-row-num {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 3;
+}
+
+.op-xlsx-info {
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--background-secondary);
+  border-top: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.op-xlsx-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* ─── Loading ──────────────────────────────────────────── */
+
+.op-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: var(--text-muted);
+  gap: 12px;
+}
+
+.op-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--background-modifier-border);
+  border-top-color: var(--interactive-accent);
+  border-radius: 50%;
+  animation: op-spin 0.8s linear infinite;
+}
+
+@keyframes op-spin { to { transform: rotate(360deg); } }
+
+/* ─── Error ────────────────────────────────────────────── */
+
+.op-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: var(--text-muted);
+  gap: 8px;
+}
+
+.op-error-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--text-error);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+/* ─── Placeholder ──────────────────────────────────────── */
+
+.op-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ─── Toast ────────────────────────────────────────────── */
+
+.op-toast {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 20px;
+  background: var(--interactive-accent);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 13px;
+  z-index: 10000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+/* ─── Text Selection ───────────────────────────────────── */
+
+.op-preview-container,
+.op-preview-container * {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* ─── Mobile ───────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .op-preview-container { padding: 8px; }
+
+  .op-preview-container .docx-wrapper {
+    max-width: 100%;
+    padding: 4px;
+    font-size: 14px;
+  }
+
+  .op-xlsx-table { font-size: 11px; }
+
+  .op-xlsx-table td {
+    padding: 3px 6px;
+    max-width: 140px;
+  }
+
+  .op-xlsx-tab {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .op-toolbar-btn {
+    padding: 4px 10px;
+    font-size: 13px;
+  }
+}

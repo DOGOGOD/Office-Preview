@@ -1,0 +1,9 @@
+{
+  "id": "office-preview",
+  "name": "Office Preview",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "Preview Word (.docx), PowerPoint (.pptx), and Excel (.xlsx) files directly in Obsidian. Supports zoom and text copy.",
+  "author": "",
+  "isDesktopOnly": false
+}
